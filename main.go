@@ -1,23 +1,35 @@
 package main
 
-// import "fmt"
 import (
-	"tiket-app-backend/config"
-    "tiket-app-backend/routes"
-    "github.com/gin-gonic/gin"
+	"log"
+
+	"mastutik-api/config"
+	"mastutik-api/models"
+	"mastutik-api/routes"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// fmt.Println("Swanirwana Backend Project Initialization...")
-	// 1. koneksi database 
+	// Connect to Database
 	config.ConnectDB()
 
-	// 2. setup gin router 
-	router := git.Default()
+	// Auto-migrate tables
+	log.Println("Migrating database models...")
+	err := config.DB.AutoMigrate(&models.Event{})
+	if err != nil {
+		log.Printf("Warning: Failed to migrate database: %v", err)
+	}
 
-	// 3. setup routes 
-	routes.SetupRoutes(router)
+	// Initialize Router
+	r := gin.Default()
 
-	// 4. jalankan server di port 8080 
-	router.run(':8080')
+	// Setup Routes
+	routes.SetupRoutes(r)
+
+	// Start Server
+	log.Println("Server is running on port 8080")
+	if err := r.Run(":8080"); err != nil {
+		log.Fatal("Failed to start server: ", err)
+	}
 }
